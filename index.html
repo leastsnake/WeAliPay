@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>二合一支付码生成器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <style>
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .shadow-custom {
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #165DFF 0%, #0040C9 100%);
+            }
+            .bg-gradient-secondary {
+                background: linear-gradient(135deg, #00B42A 0%, #00871A 100%);
+            }
+            .bg-gradient-accent {
+                background: linear-gradient(135deg, #FF7D00 0%, #D46800 100%);
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-gray-50 text-dark min-h-screen flex flex-col">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-sm sticky top-0 z-50 transition-all duration-300" id="navbar">
+        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <div class="bg-primary rounded-lg p-2">
+                    <i class="fa fa-qrcode text-white text-xl"></i>
+                </div>
+                <h1 class="text-xl font-bold text-dark">二合一支付码生成器</h1>
+            </div>
+            <nav>
+                <ul class="flex space-x-6">
+                    <li><a href="#features" class="text-gray-600 hover:text-primary transition-colors">功能</a></li>
+                    <li><a href="#generator" class="text-gray-600 hover:text-primary transition-colors">生成器</a></li>
+                    <li><a href="#faq" class="text-gray-600 hover:text-primary transition-colors">常见问题</a></li>
+                </ul>
+            </nav>
+            <button class="hidden md:block bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-all duration-300 transform hover:scale-105">
+    			<i class="fa fa-github mr-2"></i>
+    			<a href="https://githtub.com/leastsnake/WeAliPay" target="_blank">项目源码</a>
+			</button>
+        </div>
+    </header>
+
+    <!-- 英雄区域 -->
+    <section class="bg-gradient-to-br from-primary/5 to-secondary/5 py-16 md:py-24">
+        <div class="container mx-auto px-4 flex flex-col md:flex-row items-center">
+            <div class="md:w-1/2 mb-10 md:mb-0">
+                <h2 class="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight mb-4">
+                    生成真正的<span class="text-primary">物理融合型</span>二合一支付码
+                </h2>
+                <p class="text-gray-600 text-lg mb-8 max-w-lg">
+                    通过先进的物理图片合并技术，生成一个同时支持微信和支付宝的融合型二维码，无需依赖网络或设备识别。
+                </p>
+                <div class="flex flex-wrap gap-4">
+                    <a href="#generator" class="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg transition-all duration-300 transform hover:scale-105 flex items-center">
+                        <i class="fa fa-magic mr-2"></i>立即生成
+                    </a>
+                    <a href="#how-it-works" class="bg-white hover:bg-gray-50 text-primary border border-primary px-6 py-3 rounded-lg transition-all duration-300 transform hover:scale-105 flex items-center">
+                        <i class="fa fa-play-circle-o mr-2"></i>了解更多
+                    </a>
+                </div>
+            </div>
+            <div class="md:w-1/2 flex justify-center">
+                <div class="relative">
+                    <div class="w-64 h-64 md:w-80 md:h-80 bg-white p-4 rounded-xl shadow-lg relative z-10">
+                        <img id="preview-merged" src="https://picsum.photos/seed/qrcode/400/400" alt="合并后的二合一支付码预览" class="w-full h-full object-contain">
+                        <div class="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-center py-2 rounded-b-xl">
+                            <p class="text-sm">二合一支付码预览</p>
+                        </div>
+                    </div>
+                    <div class="absolute -top-4 -right-4 w-24 h-24 bg-white p-2 rounded-lg shadow-md transform rotate-6 z-5">
+                        <img src="https://picsum.photos/seed/wechat/100/100" alt="微信支付示例" class="w-full h-full object-contain">
+                        <div class="absolute inset-0 flex items-center justify-center bg-primary/20 rounded">
+                            <i class="fa fa-check-circle text-primary text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="absolute -bottom-4 -left-4 w-24 h-24 bg-white p-2 rounded-lg shadow-md transform -rotate-6 z-5">
+                        <img src="https://picsum.photos/seed/alipay/100/100" alt="支付宝支付示例" class="w-full h-full object-contain">
+                        <div class="absolute inset-0 flex items-center justify-center bg-accent/20 rounded">
+                            <i class="fa fa-check-circle text-accent text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 功能特点 -->
+    <section id="features" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">为什么选择我们的二合一支付码生成器</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">我们提供先进的支付码融合解决方案，帮助您轻松接受多种支付方式</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-neutral rounded-xl p-6 shadow-custom hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                    <div class="w-14 h-14 bg-primary/10 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-bolt text-primary text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">物理融合</h3>
+                    <p class="text-gray-600">采用先进的图片合并技术，将两个二维码物理融合为一个，无需依赖设备识别。</p>
+                </div>
+                
+                <div class="bg-neutral rounded-xl p-6 shadow-custom hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                    <div class="w-14 h-14 bg-secondary/10 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-shield text-secondary text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">安全可靠</h3>
+                    <p class="text-gray-600">所有交易数据直接进入您的账户，我们不参与资金流转，确保您的资金安全。</p>
+                </div>
+                
+                <div class="bg-neutral rounded-xl p-6 shadow-custom hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                    <div class="w-14 h-14 bg-accent/10 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-mobile text-accent text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">离线可用</h3>
+                    <p class="text-gray-600">生成后的二维码无需网络支持，可在任何离线场景下使用，扫码后自动识别支付方式。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 生成器部分 -->
+    <section id="generator" class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">开始生成您的物理融合型二合一支付码</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">输入您的微信和支付宝收款信息，我们将为您创建一个融合型二合一支付码</p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 max-w-5xl mx-auto">
+                <!-- 左侧：输入区域 -->
+                <div class="bg-white rounded-xl p-6 shadow-custom">
+                    <div class="mb-8">
+                        <h3 class="text-xl font-bold mb-4 flex items-center">
+                            <i class="fa fa-info-circle text-primary mr-2"></i>收款信息
+                        </h3>
+                        
+                        <!-- 微信收款信息 -->
+                        <div class="mb-6">
+                            <label class="block text-gray-700 font-medium mb-2">微信收款链接</label>
+                            <div class="relative flex">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fa fa-wechat text-[#07C160] text-xl"></i>
+                                </div>
+                                <input type="text" id="wechat-url" placeholder="请输入您的微信收款链接" class="flex-1 pl-10 pr-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-primary/50">
+                                <button type="button" id="wechat-upload-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-r-lg transition-colors flex items-center justify-center">
+                                    <i class="fa fa-upload mr-1"></i>
+                                    <span class="hidden sm:inline">上传</span>
+                                </button>
+                                <input type="file" id="wechat-qrcode-file" accept="image/*" class="hidden">
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2">如何获取？打开微信>收付款>二维码收款>保存图片>用微信"扫一扫"该图片>点击"识别图中二维码">点击"收款小账本">点击右上角"..."选择"复制链接"</p>
+                        </div>
+                        
+                        <!-- 支付宝收款信息 -->
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2">支付宝收款链接</label>
+                            <div class="relative flex">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fa fa-credit-card text-[#1677FF] text-xl"></i>
+                                </div>
+                                <input type="text" id="alipay-url" placeholder="请输入您的支付宝收款链接" class="flex-1 pl-10 pr-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-primary/50">
+                                <button type="button" id="alipay-upload-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-r-lg transition-colors flex items-center justify-center">
+                                    <i class="fa fa-upload mr-1"></i>
+                                    <span class="hidden sm:inline">上传</span>
+                                </button>
+                                <input type="file" id="alipay-qrcode-file" accept="image/*" class="hidden">
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2">如何获取？打开支付宝>收钱>保存图片>用支付宝"扫一扫"该图片>点击"分享收钱码">选择"复制链接"</p>
+                        </div>
+                        
+                        <!-- 二维码预览区域 -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                            <div id="wechat-qrcode-preview" class="border border-gray-200 rounded-lg p-2 bg-neutral text-center min-h-[120px] flex items-center justify-center">
+                                <div class="text-gray-400 text-sm">
+                                    <i class="fa fa-qrcode text-3xl mb-1"></i>
+                                    <p>微信二维码预览</p>
+                                </div>
+                            </div>
+                            <div id="alipay-qrcode-preview" class="border border-gray-200 rounded-lg p-2 bg-neutral text-center min-h-[120px] flex items-center justify-center">
+                                <div class="text-gray-400 text-sm">
+                                    <i class="fa fa-qrcode text-3xl mb-1"></i>
+                                    <p>支付宝二维码预览</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 合并选项 -->
+                    <div class="mb-8">
+                        <h3 class="text-xl font-bold mb-4 flex items-center">
+                            <i class="fa fa-sliders text-primary mr-2"></i>样式设置
+                        </h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-2">二维码尺寸</label>
+                                <select id="qrcode-size" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50">
+                                    <option value="300">小 (300x300)</option>
+                                    <option value="400" selected>中 (400x400)</option>
+                                    <option value="500">大 (500x500)</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-2">合并模式</label>
+                                <select id="merge-mode" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50">
+                                    <option value="overlay">重叠模式</option>
+                                    <option value="split">分割模式</option>
+                                    <option value="checkerboard">棋盘模式</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <label class="block text-gray-700 font-medium mb-2">自定义标题</label>
+                            <input type="text" id="custom-title" placeholder="例如：扫码支付" value="扫码支付" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50">
+                        </div>
+                    </div>
+                    
+                    <!-- 生成按钮 -->
+                    <button id="generate-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-[1.02] flex items-center justify-center">
+                        <i class="fa fa-magic mr-2"></i>生成二合一支付码
+                    </button>
+                    
+                    <div class="mt-4 text-center text-gray-500 text-sm">
+                        <p>注意：生成过程可能需要几秒钟时间</p>
+                        <p class="text-xs">您的收款信息仅用于生成二维码，不会被存储或共享</p>
+                    </div>
+                </div>
+                
+                <!-- 右侧：预览和下载区域 -->
+                <div class="bg-white rounded-xl p-6 shadow-custom">
+                    <h3 class="text-xl font-bold mb-4 flex items-center">
+                        <i class="fa fa-eye text-primary mr-2"></i>预览与下载
+                    </h3>
+                    
+                    <div class="border border-gray-200 rounded-lg p-4 bg-neutral mb-6 flex justify-center items-center min-h-[400px]" id="preview-container">
+                        <div class="text-center text-gray-500">
+                            <i class="fa fa-qrcode text-5xl mb-4 text-gray-300"></i>
+                            <p>请输入微信和支付宝收款链接并点击"生成二合一支付码"按钮</p>
+                        </div>
+                        
+                        <div id="loading-container" class="hidden text-center">
+                            <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
+                            <p class="text-gray-600">正在生成融合型二维码，请稍候...</p>
+                            <p class="text-gray-500 text-sm mt-2">这可能需要几秒钟时间</p>
+                        </div>
+                        
+                        <div id="merged-qrcode-container" class="hidden text-center">
+                            <div class="bg-white p-4 rounded-lg shadow-md inline-block">
+                                <div class="relative">
+                                    <canvas id="merged-qrcode" width="400" height="400" alt="二合一支付码" class="max-w-full h-auto"></canvas>
+                                    <div class="absolute top-2 right-2 bg-white/80 backdrop-blur-sm rounded-full p-1 cursor-pointer hover:bg-white transition-colors" id="copy-qrcode">
+                                        <i class="fa fa-copy text-gray-600"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <h4 id="preview-title" class="font-medium text-lg">扫码支付</h4>
+                                    <div class="flex justify-center mt-2 space-x-2">
+                                        <span class="inline-block w-3 h-3 rounded-full bg-[#07C160]"></span>
+                                        <span class="inline-block w-3 h-3 rounded-full bg-[#1677FF]"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="error-container" class="hidden text-center text-red-500">
+                            <i class="fa fa-exclamation-circle text-4xl mb-4"></i>
+                            <p id="error-message">生成二维码失败，请检查您的输入信息</p>
+                            <button id="retry-btn" class="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors">
+                                <i class="fa fa-refresh mr-2"></i>重试
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="download-container" class="hidden">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <button id="download-png" class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300 flex items-center justify-center">
+                                <i class="fa fa-download mr-2"></i>下载 PNG
+                            </button>
+                            <button id="download-jpg" class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300 flex items-center justify-center">
+                                <i class="fa fa-download mr-2"></i>下载 JPG
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 使用方法 -->
+    <section id="how-it-works" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">如何使用二合一支付码生成器</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">简单三步，轻松创建您的融合型二合一支付码</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                <div class="text-center">
+                    <div class="relative w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <span class="absolute -top-2 -right-2 w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center font-bold">1</span>
+                        <i class="fa fa-link text-primary text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">输入收款链接</h3>
+                    <p class="text-gray-600">获取您的微信和支付宝收款链接，并填入相应的输入框中</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="relative w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <span class="absolute -top-2 -right-2 w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center font-bold">2</span>
+                        <i class="fa fa-sliders text-primary text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">选择合并模式</h3>
+                    <p class="text-gray-600">根据您的需求选择不同的二维码合并模式，包括重叠、分割和棋盘模式</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="relative w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <span class="absolute -top-2 -right-2 w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center font-bold">3</span>
+                        <i class="fa fa-download text-primary text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">下载使用</h3>
+                    <p class="text-gray-600">点击生成按钮，下载融合型二维码并打印使用，顾客扫码即可自动识别</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 常见问题 -->
+    <section id="faq" class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">常见问题</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">关于融合型二合一支付码生成器的常见问题解答</p>
+            </div>
+            
+            <div class="max-w-3xl mx-auto">
+                <div class="space-y-4">
+                    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+                        <button class="faq-toggle w-full text-left px-6 py-4 flex justify-between items-center focus:outline-none">
+                            <span class="font-medium">物理融合型二合一支付码是如何工作的？</span>
+                            <i class="fa fa-chevron-down text-gray-400 transition-transform duration-300"></i>
+                        </button>
+                        <div class="faq-content px-6 pb-4 hidden">
+                            <p class="text-gray-600">
+                                物理融合型二合一支付码通过特殊的图片合并技术，将微信和支付宝的二维码特征融合在一个图片中。当用户使用微信扫码时，微信支付应用会识别出微信支付的特征；使用支付宝扫码时，支付宝会识别出自己的特征，从而实现一个二维码同时支持两种支付方式。
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+                        <button class="faq-toggle w-full text-left px-6 py-4 flex justify-between items-center focus:outline-none">
+                            <span class="font-medium">不同的合并模式有什么区别？</span>
+                            <i class="fa fa-chevron-down text-gray-400 transition-transform duration-300"></i>
+                        </button>
+                        <div class="faq-content px-6 pb-4 hidden">
+                            <p class="text-gray-600">
+                                我们提供三种不同的合并模式：
+                                <ul class="list-disc list-inside mt-2 text-gray-600">
+                                    <li><strong>重叠模式</strong>：将两个二维码部分重叠在一起，形成一个复合二维码</li>
+                                    <li><strong>分割模式</strong>：将二维码区域分割成两部分，分别放置微信和支付宝的二维码</li>
+                                    <li><strong>棋盘模式</strong>：将二维码区域划分为小格子，交替放置微信和支付宝的二维码模块</li>
+                                </ul>
+                                每种模式的识别成功率可能略有不同，您可以根据实际使用情况选择最合适的模式。
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+                        <button class="faq-toggle w-full text-left px-6 py-4 flex justify-between items-center focus:outline-none">
+                            <span class="font-medium">生成的二维码扫描成功率如何？</span>
+                            <i class="fa fa-chevron-down text-gray-400 transition-transform duration-300"></i>
+                        </button>
+                        <div class="faq-content px-6 pb-4 hidden">
+                            <p class="text-gray-600">
+                                我们的物理融合技术经过优化，扫描成功率通常在95%以上。扫描成功率受多种因素影响，包括手机摄像头质量、光线条件、二维码打印质量等。如果扫描遇到问题，建议尝试调整扫描角度或距离，或者使用更明亮的光线环境。
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+                        <button class="faq-toggle w-full text-left px-6 py-4 flex justify-between items-center focus:outline-none">
+                            <span class="font-medium">为什么我生成的支付码无法被扫描？</span>
+                            <i class="fa fa-chevron-down text-gray-400 transition-transform duration-300"></i>
+                        </button>
+                        <div class="faq-content px-6 pb-4 hidden">
+                            <p class="text-gray-600">
+                                如果生成的支付码无法被扫描，请检查以下几点：
+                                <ol class="list-decimal list-inside mt-2 text-gray-600">
+                                    <li>确保输入的微信和支付宝收款链接正确无误</li>
+                                    <li>检查生成的二维码图片是否清晰，打印时是否有模糊或变形</li>
+                                    <li>尝试调整二维码尺寸，较大的尺寸通常更容易被扫描</li>
+                                    <li>尝试切换不同的合并模式，某些模式可能在特定设备上表现更好</li>
+                                </ol>
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+                        <button class="faq-toggle w-full text-left px-6 py-4 flex justify-between items-center focus:outline-none">
+                            <span class="font-medium">是否可以在手机上使用这个生成器？</span>
+                            <i class="fa fa-chevron-down text-gray-400 transition-transform duration-300"></i>
+                        </button>
+                        <div class="faq-content px-6 pb-4 hidden">
+                            <p class="text-gray-600">
+                                当然可以。我们的二合一支付码生成器完全响应式设计，在手机、平板和电脑上都能正常使用。您可以在任何设备上生成并下载您的支付码。
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+                        <button class="faq-toggle w-full text-left px-6 py-4 flex justify-between items-center focus:outline-none">
+                            <span class="font-medium">如何上传二维码图片？</span>
+                            <i class="fa fa-chevron-down text-gray-400 transition-transform duration-300"></i>
+                        </button>
+                        <div class="faq-content px-6 pb-4 hidden">
+                            <p class="text-gray-600">
+                                您可以通过点击输入框右侧的"上传"按钮，选择您保存的微信或支付宝收款二维码图片。系统会自动解析图片中的链接并填充到输入框中，同时在下方显示二维码预览。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="bg-primary rounded-lg p-2">
+                            <i class="fa fa-qrcode text-white text-xl"></i>
+                        </div>
+                        <h2 class="text-xl font-bold">二合一支付码生成器</h2>
+                    </div>
+                    <p class="text-gray-400">
+                        简单、安全地生成融合型微信和支付宝支付码，让收款更便捷。
+                    </p>
+                    <div class="flex space-x-4 mt-6">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fa fa-weibo"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fa fa-wechat"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fa fa-github"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-bold mb-4">快速链接</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#features" class="text-gray-400 hover:text-white transition-colors">功能特点</a></li>
+                        <li><a href="#generator" class="text-gray-400 hover:text-white transition-colors">生成器</a></li>
+                        <li><a href="#how-it-works" class="text-gray-400 hover:text-white transition-colors">使用方法</a></li>
+                        <li><a href="#faq" class="text-gray-400 hover:text-white transition-colors">常见问题</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-bold mb-4">联系我们</h3>
+                    <ul class="space-y-2">
+                        <li class="flex items-start">
+                            <i class="fa fa-envelope-o text-gray-400 mt-1 mr-3"></i>
+                            <span class="text-gray-400">contact@example.com</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-phone text-gray-400 mt-1 mr-3"></i>
+                            <span class="text-gray-400">400-123-4567</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-map-marker text-gray-400 mt-1 mr-3"></i>
+                            <span class="text-gray-400">北京市朝阳区科技园</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-10 pt-6 text-center text-gray-500 text-sm">
+                
+                <p>© 2025 二合一支付码生成器 leastsnake 版权所有</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 返回顶部按钮 -->
+    <button id="back-to-top" class="fixed bottom-6 right-6 bg-blue-500 hover:bg-blue-600 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 opacity-0 invisible">
+        <i class="fa fa-arrow-up"></i>
+    </button>
+
+    <!-- JavaScript -->
+    <script>
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化上传按钮事件
+            const wechatUploadBtn = document.getElementById('wechat-upload-btn');
+            const wechatQrcodeFile = document.getElementById('wechat-qrcode-file');
+            const alipayUploadBtn = document.getElementById('alipay-upload-btn');
+            const alipayQrcodeFile = document.getElementById('alipay-qrcode-file');
+            
+            // 添加上传按钮点击事件处理
+            wechatUploadBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                wechatQrcodeFile.click();
+            });
+            
+            alipayUploadBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                alipayQrcodeFile.click();
+            });
+            
+            // 文件选择后预览图片
+            wechatQrcodeFile.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        // 显示预览
+                        const previewContainer = document.getElementById('wechat-qrcode-preview');
+                        previewContainer.innerHTML = `<img src="${e.target.result}" alt="微信二维码预览" class="max-w-full h-auto">`;
+                        
+                        // 尝试解析二维码
+                        parseQrcodeFromImage(e.target.result, function(url) {
+                            if (url) {
+                                document.getElementById('wechat-url').value = url;
+                            } else {
+                                alert('无法识别二维码，请确保上传的是有效的微信收款二维码图片。');
+                            }
+                        });
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            alipayQrcodeFile.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        // 显示预览
+                        const previewContainer = document.getElementById('alipay-qrcode-preview');
+                        previewContainer.innerHTML = `<img src="${e.target.result}" alt="支付宝二维码预览" class="max-w-full h-auto">`;
+                        
+                        // 尝试解析二维码
+                        parseQrcodeFromImage(e.target.result, function(url) {
+                            if (url) {
+                                document.getElementById('alipay-url').value = url;
+                            } else {
+                                alert('无法识别二维码，请确保上传的是有效的支付宝收款二维码图片。');
+                            }
+                        });
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // 返回顶部按钮逻辑
+            const backToTopBtn = document.getElementById('back-to-top');
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 300) {
+                    backToTopBtn.classList.remove('opacity-0', 'invisible');
+                    backToTopBtn.classList.add('opacity-100', 'visible');
+                } else {
+                    backToTopBtn.classList.remove('opacity-100', 'visible');
+                    backToTopBtn.classList.add('opacity-0', 'invisible');
+                }
+            });
+
+            backToTopBtn.addEventListener('click', function() {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+
+            // 生成二维码逻辑
+            const generateBtn = document.getElementById('generate-btn');
+            generateBtn.addEventListener('click', function() {
+                const wechatUrl = document.getElementById('wechat-url').value;
+                const alipayUrl = document.getElementById('alipay-url').value;
+                const qrcodeSize = document.getElementById('qrcode-size').value;
+                const mergeMode = document.getElementById('merge-mode').value;
+                const customTitle = document.getElementById('custom-title').value;
+
+                if (!wechatUrl || !alipayUrl) {
+                    const errorContainer = document.getElementById('error-container');
+                    const errorMessage = document.getElementById('error-message');
+                    errorMessage.textContent = '请输入有效的微信和支付宝收款链接';
+                    errorContainer.classList.remove('hidden');
+                    return;
+                }
+
+                const previewContainer = document.getElementById('preview-container');
+                const loadingContainer = document.getElementById('loading-container');
+                const mergedQrcodeContainer = document.getElementById('merged-qrcode-container');
+                const errorContainer = document.getElementById('error-container');
+                const downloadContainer = document.getElementById('download-container');
+
+                // 隐藏所有可能显示的容器
+                previewContainer.querySelectorAll('div').forEach(div => div.classList.add('hidden'));
+                loadingContainer.classList.remove('hidden');
+
+                try {
+                    // 创建两个二维码
+                    const wechatQRCode = new QRCode(document.createElement('div'), {
+                        text: wechatUrl,
+                        width: 400,
+                        height: 400,
+                        colorDark: '#000000',
+                        colorLight: '#ffffff',
+                        correctLevel: QRCode.CorrectLevel.H
+                    });
+
+                    const alipayQRCode = new QRCode(document.createElement('div'), {
+                        text: alipayUrl,
+                        width: 400,
+                        height: 400,
+                        colorDark: '#000000',
+                        colorLight: '#ffffff',
+                        correctLevel: QRCode.CorrectLevel.H
+                    });
+
+                    setTimeout(function() {
+                        try {
+                            const wechatImg = wechatQRCode._el.querySelector('img');
+                            const alipayImg = alipayQRCode._el.querySelector('img');
+                            
+                            loadingContainer.classList.add('hidden');
+                            mergedQrcodeContainer.classList.remove('hidden');
+                            downloadContainer.classList.remove('hidden');
+
+                            const previewTitle = document.getElementById('preview-title');
+                            previewTitle.textContent = customTitle;
+
+                            const mergedQrcode = document.getElementById('merged-qrcode');
+                            const ctx = mergedQrcode.getContext('2d');
+                            ctx.clearRect(0, 0, mergedQrcode.width, mergedQrcode.height);
+                            ctx.fillStyle = 'white';
+                            ctx.fillRect(0, 0, mergedQrcode.width, mergedQrcode.height);
+
+                            // 使用微信二维码作为背景层
+                            ctx.drawImage(wechatImg, 0, 0, 400, 400);
+
+                            // 处理支付宝二维码：删除3个定位角点中的无点位角，保留3个定位角
+                            const alipayCanvas = document.createElement('canvas');
+                            alipayCanvas.width = 400;
+                            alipayCanvas.height = 400;
+                            const alipayCtx = alipayCanvas.getContext('2d');
+                            alipayCtx.drawImage(alipayImg, 0, 0, 400, 400);
+
+                            // 顺时针旋转180°
+                            alipayCtx.translate(200, 200);
+                            alipayCtx.rotate(Math.PI);
+                            alipayCtx.drawImage(alipayImg, -200, -200, 400, 400);
+                            alipayCtx.setTransform(1, 0, 0, 1, 0, 0);
+
+                            // 将处理后的支付宝二维码放在微信二维码的右下角无点位区域
+                            ctx.drawImage(alipayCanvas, 200, 200, 200, 200);
+
+                            // 显示成功信息
+                            previewContainer.querySelectorAll('div').forEach(div => div.classList.add('hidden'));
+                            mergedQrcodeContainer.classList.remove('hidden');
+                            downloadContainer.classList.remove('hidden');
+
+                            // 在预览区域显示合并后的二维码，并添加官方样式边框和文字
+                            const mergedQrcodeUrl = mergedQrcode.toDataURL('image/png');
+                            
+                            // 创建一个容器来包裹二维码和边框
+                            const previewWrapper = document.createElement('div');
+                            previewWrapper.style.width = '400px';
+                            previewWrapper.style.height = '540px';
+                            previewWrapper.style.margin = '0 auto';
+                            previewWrapper.style.position = 'relative';
+
+                            // 创建顶部白色背景区域（品牌标识）
+                            const topWhiteArea = document.createElement('div');
+                            topWhiteArea.style.width = '100%';
+                            topWhiteArea.style.height = '80px';
+                            topWhiteArea.style.background = 'white';
+                            topWhiteArea.style.borderRadius = '8px 8px 0 0';
+                            topWhiteArea.style.position = 'relative';
+                            topWhiteArea.style.display = 'flex';
+                            topWhiteArea.style.justifyContent = 'center';
+                            topWhiteArea.style.alignItems = 'center';
+
+                            // 创建品牌标识容器
+                            const brandContainer = document.createElement('div');
+                            brandContainer.style.display = 'flex';
+                            brandContainer.style.justifyContent = 'center';
+                            brandContainer.style.alignItems = 'center';
+                            brandContainer.style.gap = '20px';
+
+                            // 微信标识（方形，绿色背景）
+                            const wechatIcon = document.createElement('div');
+                            wechatIcon.style.width = '60px';
+                            wechatIcon.style.height = '60px';
+                            wechatIcon.style.backgroundColor = '#07C160';
+                            wechatIcon.style.borderRadius = '8px';
+                            wechatIcon.style.display = 'flex';
+                            wechatIcon.style.justifyContent = 'center';
+                            wechatIcon.style.alignItems = 'center';
+                            wechatIcon.style.color = 'white';
+                            wechatIcon.style.fontSize = '30px';
+                            wechatIcon.innerHTML = '<i class="fa fa-weixin"></i>';
+
+                            // 支付宝标识（方形，蓝色背景）
+                            const aliIcon = document.createElement('div');
+                            aliIcon.style.width = '60px';
+                            aliIcon.style.height = '60px';
+                            aliIcon.style.backgroundColor = '#1677FF';
+                            aliIcon.style.borderRadius = '8px';
+                            aliIcon.style.display = 'flex';
+                            aliIcon.style.justifyContent = 'center';
+                            aliIcon.style.alignItems = 'center';
+                            aliIcon.style.color = 'white';
+                            aliIcon.style.fontSize = '30px';
+                            aliIcon.innerHTML = '<i class="fa fa-credit-card"></i>';
+
+                            brandContainer.appendChild(wechatIcon);
+                            brandContainer.appendChild(aliIcon);
+                            topWhiteArea.appendChild(brandContainer);
+
+                            // 创建二维码区域
+                            const qrcodeArea = document.createElement('div');
+                            qrcodeArea.style.width = '240px';
+                            qrcodeArea.style.height = '240px';
+                            qrcodeArea.style.margin = '0 auto';
+                            qrcodeArea.style.padding = '20px';
+                            qrcodeArea.style.backgroundColor = 'white';
+                            qrcodeArea.style.border = '1px solid #eee';
+                            qrcodeArea.style.borderRadius = '8px';
+
+                            // 创建二维码图片
+                            const qrcodeImg = document.createElement('img');
+                            qrcodeImg.src = mergedQrcodeUrl;
+                            qrcodeImg.style.width = '100%';
+                            qrcodeImg.style.height = '100%';
+                            qrcodeImg.style.display = 'block';
+
+                            qrcodeArea.appendChild(qrcodeImg);
+
+                            // 创建底部白色区域（提示文字）
+                            const bottomWhiteArea = document.createElement('div');
+                            bottomWhiteArea.style.width = '100%';
+                            bottomWhiteArea.style.height = '60px';
+                            bottomWhiteArea.style.background = 'white';
+                            bottomWhiteArea.style.borderRadius = '0 0 8px 8px';
+                            bottomWhiteArea.style.display = 'flex';
+                            bottomWhiteArea.style.justifyContent = 'center';
+                            bottomWhiteArea.style.alignItems = 'center';
+                            bottomWhiteArea.style.fontWeight = 'bold';
+                            bottomWhiteArea.style.color = '#333';
+                            bottomWhiteArea.style.fontSize = '14px';
+                            bottomWhiteArea.style.padding = '0 20px';
+                            bottomWhiteArea.textContent = '付款时请核实账户是否正确';
+
+                            // 组装所有元素
+                            previewWrapper.appendChild(topWhiteArea);
+                            previewWrapper.appendChild(qrcodeArea);
+                            previewWrapper.appendChild(bottomWhiteArea);
+
+                            // 清空预览区域并添加新内容
+                            const previewArea = document.getElementById('preview-container');
+                            previewArea.innerHTML = '';
+                            previewArea.appendChild(previewWrapper);
+
+                            // 创建下载用的完整图片
+                            const downloadCanvas = document.createElement('canvas');
+                            const downloadCtx = downloadCanvas.getContext('2d');
+                            downloadCanvas.width = 400;
+                            downloadCanvas.height = 540;
+
+                            // 绘制白色背景
+                            downloadCtx.fillStyle = 'white';
+                            downloadCtx.fillRect(0, 0, downloadCanvas.width, downloadCanvas.height);
+
+                            // 绘制顶部白色区域（品牌标识）
+                            downloadCtx.fillStyle = 'white';
+                            downloadCtx.fillRect(0, 0, 400, 80);
+
+                            // 绘制微信和支付宝标识（方形）
+                            downloadCtx.fillStyle = '#07C160';
+                            downloadCtx.fillRect(140, 10, 60, 60);
+                            downloadCtx.fillStyle = '#1677FF';
+                            downloadCtx.fillRect(240, 10, 60, 60);
+
+                            // 绘制图标
+                            downloadCtx.fillStyle = 'white';
+                            downloadCtx.font = '30px Arial';
+                            downloadCtx.fillText('W', 170, 65);
+                            downloadCtx.fillText('A', 270, 65);
+
+                            // 绘制二维码区域
+                            downloadCtx.fillStyle = 'white';
+                            downloadCtx.fillRect(80, 130, 240, 240);
+                            downloadCtx.strokeStyle = '#eee';
+                            downloadCtx.lineWidth = 1;
+                            downloadCtx.strokeRect(80, 130, 240, 240);
+
+                            const qrcodeImg2 = new Image();
+                            qrcodeImg2.src = mergedQrcodeUrl;
+                            qrcodeImg2.onload = function() {
+                                downloadCtx.drawImage(qrcodeImg2, 80, 130, 240, 240);
+
+                                // 绘制底部提示文字
+                                downloadCtx.fillStyle = '#333';
+                                downloadCtx.font = 'bold 14px Arial';
+                                downloadCtx.textAlign = 'center';
+                                downloadCtx.fillText('付款时请核实账户是否正确', 200, 480);
+
+                                // 存储下载用的图片数据
+                                window.downloadCanvas = downloadCanvas;
+                            };
+
+                        } catch (error) {
+                            // 显示错误信息
+                            previewContainer.querySelectorAll('div').forEach(div => div.classList.add('hidden'));
+                            errorContainer.classList.remove('hidden');
+                            document.getElementById('error-message').textContent = '生成二维码失败，请检查您的输入信息或尝试不同的合并模式。';
+                            console.error('生成二维码失败:', error);
+                        }
+                    }, 1000);
+                } catch (error) {
+                    // 显示错误信息
+                    previewContainer.querySelectorAll('div').forEach(div => div.classList.add('hidden'));
+                    errorContainer.classList.remove('hidden');
+                    document.getElementById('error-message').textContent = '生成二维码失败，请检查您的输入信息或尝试不同的合并模式。';
+                    console.error('生成二维码失败:', error);
+                }
+            });
+
+            // 复制二维码逻辑
+            const copyQrcode = document.getElementById('copy-qrcode');
+            copyQrcode.addEventListener('click', function() {
+                if (window.downloadCanvas) {
+                    window.downloadCanvas.toBlob(function(blob) {
+                        const clipboardItem = new ClipboardItem({ 'image/png': blob });
+                        navigator.clipboard.write([clipboardItem])
+                           .then(function() {
+                                alert('二维码已复制到剪贴板');
+                            })
+                           .catch(function(error) {
+                                console.error('复制二维码失败:', error);
+                                alert('复制二维码失败，请稍后重试');
+                            });
+                    });
+                } else {
+                    alert('请先生成二维码');
+                }
+            });
+
+            // 下载二维码逻辑
+            const downloadPng = document.getElementById('download-png');
+            const downloadJpg = document.getElementById('download-jpg');
+
+            downloadPng.addEventListener('click', function() {
+                if (window.downloadCanvas) {
+                    const link = document.createElement('a');
+                    link.href = window.downloadCanvas.toDataURL('image/png');
+                    link.download = 'merged_qrcode.png';
+                    link.click();
+                } else {
+                    alert('请先生成二维码');
+                }
+            });
+
+            downloadJpg.addEventListener('click', function() {
+                if (window.downloadCanvas) {
+                    const link = document.createElement('a');
+                    link.href = window.downloadCanvas.toDataURL('image/jpeg');
+                    link.download = 'merged_qrcode.jpg';
+                    link.click();
+                } else {
+                    alert('请先生成二维码');
+                }
+            });
+
+            // 常见问题展开/收起逻辑
+            const faqToggles = document.querySelectorAll('.faq-toggle');
+            faqToggles.forEach(toggle => {
+                toggle.addEventListener('click', function() {
+                    const content = this.nextElementSibling;
+                    const icon = this.querySelector('i');
+                    if (content.classList.contains('hidden')) {
+                        content.classList.remove('hidden');
+                        icon.classList.add('rotate-180');
+                    } else {
+                        content.classList.add('hidden');
+                        icon.classList.remove('rotate-180');
+                    }
+                });
+            });
+
+            function parseQrcodeFromImage(imageDataUrl, callback) {
+                const img = new Image();
+                img.crossOrigin = 'Anonymous'; // 添加跨域属性
+                img.src = imageDataUrl;
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    
+                    try {
+                        const code = jsQR(imageData.data, imageData.width, imageData.height);
+                        if (code) {
+                            callback(code.data);
+                        } else {
+                            callback(null);
+                        }
+                    } catch (error) {
+                        console.error('二维码解析失败:', error);
+                        callback(null);
+                    }
+                };
+                img.onerror = function() {
+                    console.error('图片加载失败');
+                    callback(null);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
